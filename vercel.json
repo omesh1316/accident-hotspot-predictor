@@ -3,10 +3,7 @@
   "functions": {
     "api/index.py": {
       "maxDuration": 30,
-      "includeFiles": [
-        "models/**",
-        "data/Road.csv"
-      ]
+      "includeFiles": "{models/**,data/Road.csv}"
     }
   }
 }
