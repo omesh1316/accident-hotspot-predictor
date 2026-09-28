@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f6f2">
+  <meta name="description" content="Road accident analysis and severity prediction for Addis Ababa.">
+  <title>Roadwatch | Accident Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script defer src="/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#overview" aria-label="Roadwatch home">
+        <span class="brand-mark"><i data-lucide="waypoints"></i></span>
+        <span class="brand-name">roadwatch<span class="brand-period">.</span></span>
+      </a>
+      <div class="topbar-meta"><span class="live-dot"></span><span>ADDIS ABABA</span><span class="meta-divider"></span><span>ROAD SAFETY INTELLIGENCE</span></div>
+      <button class="button button-primary top-action" id="openPrediction" type="button"><i data-lucide="scan-line"></i><span>Assess conditions</span></button>
+    </header>
+
+    <main>
+      <section class="page-heading">
+        <div>
+          <p class="eyebrow">ACCIDENT INTELLIGENCE / 01</p>
+          <h1>Road safety, in focus.</h1>
+          <p class="heading-copy">Explore accident patterns and assess severity risk across Addis Ababa.</p>
+        </div>
+        <div class="view-switch" role="tablist" aria-label="Dashboard views">
+          <button class="view-tab is-active" type="button" role="tab" aria-selected="true" data-view="overview"><i data-lucide="chart-no-axes-combined"></i>Overview</button>
+          <button class="view-tab" type="button" role="tab" aria-selected="false" data-view="prediction"><i data-lucide="shield-check"></i>Risk assessment</button>
+        </div>
+      </section>
+
+      <section id="overviewView" class="view-panel">
+        <div class="filter-bar" aria-label="Dashboard filters">
+          <div class="filter-label"><i data-lucide="list-filter"></i><span>Filter data</span></div>
+          <label class="filter-control"><span>Weather</span><select id="weatherFilter"><option value="All">All conditions</option></select></label>
+          <label class="filter-control"><span>Day</span><select id="dayFilter"><option value="All">All days</option></select></label>
+          <label class="filter-control"><span>Severity</span><select id="severityFilter"><option value="All">All severities</option></select></label>
+          <button class="reset-button" id="resetFilters" type="button" title="Reset filters" aria-label="Reset filters"><i data-lucide="rotate-ccw"></i></button>
+        </div>
+
+        <div class="metric-grid" aria-live="polite">
+          <article class="metric metric-total"><div class="metric-top"><span>Recorded accidents</span><i data-lucide="car-front"></i></div><strong id="totalMetric">--</strong><div class="metric-foot"><span class="metric-marker marker-ink"></span>Filtered dataset</div></article>
+          <article class="metric"><div class="metric-top"><span>Fatal injuries</span><i data-lucide="triangle-alert"></i></div><strong id="fatalMetric">--</strong><div class="metric-foot"><span class="metric-marker marker-red"></span>Critical outcome</div></article>
+          <article class="metric"><div class="metric-top"><span>Serious injuries</span><i data-lucide="activity"></i></div><strong id="seriousMetric">--</strong><div class="metric-foot"><span class="metric-marker marker-amber"></span>High impact</div></article>
+          <article class="metric"><div class="metric-top"><span>Slight injuries</span><i data-lucide="heart-pulse"></i></div><strong id="slightMetric">--</strong><div class="metric-foot"><span class="metric-marker marker-green"></span>Lower impact</div></article>
+        </div>
+
+        <div class="chart-grid">
+          <article class="panel chart-panel severity-panel">
+            <div class="panel-heading"><div><p class="panel-kicker">OUTCOME PROFILE</p><h2>Severity distribution</h2></div><span class="panel-index">01</span></div>
+            <div class="chart-area doughnut-area"><canvas id="severityChart" aria-label="Accidents by severity"></canvas></div>
+          </article>
+          <article class="panel chart-panel day-panel">
+            <div class="panel-heading"><div><p class="panel-kicker">WEEKLY RHYTHM</p><h2>Accidents by day</h2></div><span class="panel-index">02</span></div>
+            <div class="chart-area"><canvas id="dayChart" aria-label="Accidents by weekday"></canvas></div>
+          </article>
+          <article class="panel chart-panel weather-panel">
+            <div class="panel-heading"><div><p class="panel-kicker">CONDITION BREAKDOWN</p><h2>Weather and severity</h2></div><span class="panel-index">03</span></div>
+            <div class="chart-area"><canvas id="weatherChart" aria-label="Accident severity by weather"></canvas></div>
+          </article>
+          <article class="panel chart-panel causes-panel">
+            <div class="panel-heading"><div><p class="panel-kicker">BEHAVIORAL FACTORS</p><h2>Leading causes</h2></div><span class="panel-index">04</span></div>
+            <div class="chart-area causes-area"><canvas id="causesChart" aria-label="Most common accident causes"></canvas></div>
+          </article>
+        </div>
+
+        <section class="panel map-panel">
+          <div class="panel-heading map-heading"><div><p class="panel-kicker">SPATIAL OVERVIEW / ADDIS ABABA</p><h2>Accident concentration</h2></div><div class="map-legend"><span><i class="legend-dot dot-high"></i>Higher volume</span><span><i class="legend-dot dot-low"></i>Lower volume</span></div></div>
+          <div id="hotspotsMap" role="application" aria-label="Map of accident concentration areas"></div>
+          <div class="map-foot"><span>LOCATION MARKERS ARE APPROXIMATE AREA CENTERS</span><span id="hotspotCount">-- AREAS</span></div>
+        </section>
+      </section>
+
+      <section id="predictionView" class="view-panel prediction-view" hidden>
+        <div class="prediction-intro"><p class="eyebrow">MODEL-ASSISTED ESTIMATE / 02</p><h2>Assess road conditions.</h2><p>Enter the conditions to estimate the most likely accident severity class.</p></div>
+        <div class="prediction-layout">
+          <form class="panel prediction-form" id="predictionForm">
+            <div class="form-section"><div class="form-section-title"><span class="step-number">01</span><h3>When and where</h3></div><div class="form-grid">
+              <label class="field"><span>Hour of day</span><select name="hour" id="hourInput"></select></label>
+              <label class="field"><span>Day of week</span><select name="day_of_week"></select></label>
+              <label class="field"><span>Weather</span><select name="weather"></select></label>
+              <label class="field"><span>Junction type</span><select name="junction_type"></select></label>
+            </div></div>
+            <div class="form-section"><div class="form-section-title"><span class="step-number">02</span><h3>Road and impact</h3></div><div class="form-grid">
+              <label class="field"><span>Vehicles involved</span><select name="num_vehicles" id="vehiclesInput"></select></label>
+              <label class="field"><span>Casualties</span><select name="num_casualties" id="casualtiesInput"></select></label>
+              <label class="field"><span>Road surface</span><select name="road_surface"></select></label>
+              <label class="field"><span>Light conditions</span><select name="light_conditions"></select></label>
+              <label class="field field-wide"><span>Primary cause</span><select name="cause"></select></label>
+            </div></div>
+            <button class="button button-primary predict-button" type="submit"><i data-lucide="scan-line"></i><span>Estimate severity</span><i data-lucide="arrow-up-right" class="button-trailing"></i></button>
+            <p class="form-note">Estimates reflect patterns in the supplied accident dataset.</p>
+          </form>
+          <aside class="panel result-panel" id="resultPanel" aria-live="polite">
+            <div class="result-empty" id="resultEmpty"><span class="result-icon"><i data-lucide="shield-question"></i></span><p class="panel-kicker">PREDICTION RESULT</p><h3>Awaiting conditions</h3><p>Your estimate and class probabilities will appear here.</p></div>
+            <div class="result-content" id="resultContent" hidden>
+              <p class="panel-kicker">PREDICTION RESULT</p><div class="result-status" id="resultStatus"><span class="result-icon"><i data-lucide="shield-check"></i></span><span id="riskLabel">RISK CLASS</span></div>
+              <h3 id="resultSeverity">--</h3><p class="result-confidence"><strong id="confidenceValue">--</strong><span>model confidence</span></p>
+              <div class="probability-heading"><span>Class probabilities</span><span>LIKELIHOOD</span></div><div class="probability-list" id="probabilityList"></div>
+              <p class="result-disclaimer">This is a statistical estimate, not a guarantee of individual outcomes.</p>
+            </div>
+            <div class="result-loading" id="resultLoading" hidden><span class="loader"></span><span>Scoring conditions</span></div>
+          </aside>
+        </div>
+      </section>
+      <footer class="page-footer"><span>ROADWATCH <span class="brand-period">/</span> ACCIDENT DATA DASHBOARD</span><span>MODEL OUTPUTS ARE INDICATIVE ONLY</span></footer>
+    </main>
+  </div>
+</body>
+</html>
